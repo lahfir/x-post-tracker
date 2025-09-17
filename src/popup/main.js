@@ -23,7 +23,7 @@ async function refresh() {
   renderLegend(elements.legendScale);
   renderTotals(elements, computeTotals(dailyCounts));
   renderGoalProgress(elements, todaySummary, goalsState);
-  elements.emptyState.hidden = todaySummary.total > 0 || todaySummary.likes > 0 || todaySummary.reposts > 0;
+  elements.emptyState.hidden = todaySummary.total > 0;
   syncGoalInputs(elements, goalsState);
 }
 

@@ -1,7 +1,6 @@
 import { formatDateKey } from '../shared/date.js';
 import { clampGoalValue } from '../shared/format.js';
 import { DEFAULT_GOALS, STORAGE_KEYS, MESSAGE_TYPES, CLASSIFICATION } from '../shared/constants.js';
-import { ensureBaseline } from './baseline.js';
 import { ensureDailyEntry } from '../shared/storage.js';
 
 const recordedEventIds = new Set();
@@ -53,8 +52,6 @@ export async function handleTrackedEvent(payload) {
 }
 
 async function incrementDailyCount(classification, timestamp) {
-  await ensureBaseline().catch(() => {});
-
   const eventDate = timestamp ? new Date(timestamp) : new Date();
   const key = formatDateKey(eventDate);
   const storage = await chrome.storage.local.get([

@@ -18,8 +18,8 @@ export function buildTodaySummary(dailyCounts) {
   const counts = dailyCounts[key] || {};
   const posts = counts.posts || 0;
   const replies = counts.replies || 0;
-  const likes = counts.likes || 0;
   const reposts = counts.reposts || counts.shares || 0;
+  const likes = counts.likes || 0;
 
   return {
     today,
@@ -28,7 +28,7 @@ export function buildTodaySummary(dailyCounts) {
     replies,
     likes,
     reposts,
-    total: posts + replies + reposts,
+    total: posts + replies,
   };
 }
 

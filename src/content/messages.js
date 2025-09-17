@@ -1,6 +1,6 @@
 import { MESSAGE_TYPES } from '../shared/constants.js';
 
-export function setupMessageBridge({ onTweetEvent, onBaselineResponse }) {
+export function setupMessageBridge({ onTweetEvent }) {
   window.addEventListener('message', event => {
     if (event.source !== window) {
       return;
@@ -13,20 +13,5 @@ export function setupMessageBridge({ onTweetEvent, onBaselineResponse }) {
     if (data.type === MESSAGE_TYPES.tweetDetected && onTweetEvent) {
       onTweetEvent(data.payload || {});
     }
-
-    if (data.type === MESSAGE_TYPES.baselineResponse && onBaselineResponse) {
-      onBaselineResponse(data.payload || {});
-    }
   });
-}
-
-export function postBaselineRequest(dateKey) {
-  window.postMessage(
-    {
-      source: 'x-post-tracker',
-      type: MESSAGE_TYPES.baselineRequest,
-      payload: { key: dateKey },
-    },
-    '*',
-  );
 }

@@ -20,14 +20,11 @@ export const STORAGE_KEYS = Object.freeze({
   dailyCounts: 'dailyCounts',
   goals: 'goals',
   goalNotifications: 'goalNotifications',
-  baseline: 'baselineSnapshots',
 });
 
 export const MESSAGE_TYPES = Object.freeze({
   update: 'xPostTracker:update',
   tweetDetected: 'xPostTracker:tweetDetected',
-  baselineRequest: 'xPostTracker:baselineRequest',
-  baselineResponse: 'xPostTracker:baselineResponse',
   goalAchieved: 'xPostTracker:goalAchieved',
 });
 

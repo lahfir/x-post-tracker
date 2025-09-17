@@ -36,7 +36,7 @@ export function renderHeatmap(container, summary) {
 
   const totalLabel = document.createElement('span');
   totalLabel.className = 'today-total';
-  const descriptor = total === 1 ? 'interaction' : 'interactions';
+  const descriptor = total === 1 ? 'post/reply' : 'posts/replies';
   totalLabel.textContent = `${total} ${descriptor}`;
   counts.appendChild(totalLabel);
 

@@ -29,7 +29,14 @@
         "src/injected/page/classify.js",
         "src/injected/page/utils.js",
         "src/injected/page/auth.js",
-        "src/injected/page/baseline.js"
+        "src/content/main.js",
+        "src/content/inject.js",
+        "src/content/messages.js",
+        "src/content/tracker.js",
+        "src/shared/constants.js",
+        "src/shared/date.js",
+        "src/shared/format.js",
+        "src/shared/storage.js"
       ],
       "matches": ["https://x.com/*"]
     }
