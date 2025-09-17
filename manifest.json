@@ -7,13 +7,8 @@
     "default_title": "X Activity Tracker",
     "default_popup": "src/popup/popup.html"
   },
-  "permissions": [
-    "storage",
-    "notifications"
-  ],
-  "host_permissions": [
-    "https://x.com/*"
-  ],
+  "permissions": ["storage", "notifications"],
+  "host_permissions": ["https://x.com/*"],
   "content_scripts": [
     {
       "matches": ["https://x.com/*"],
@@ -45,6 +40,9 @@
     "service_worker": "src/background/service-worker.js"
   },
   "icons": {
-    "128": "assets/icon-128.png"
+    "16": "assets/icon16.png",
+    "32": "assets/icon32.png",
+    "48": "assets/icon48.png",
+    "128": "assets/icon128.png"
   }
 }
