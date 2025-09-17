@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>X Post Tracker</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header class="header">
+      <h1 class="title">X Activity</h1>
+      <div class="totals">
+        <div class="metric">
+          <span class="metric-label">Likes</span>
+          <span class="metric-value" id="total-likes">0</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Reposts</span>
+          <span class="metric-value" id="total-reposts">0</span>
+        </div>
+      </div>
+    </header>
+    <section class="goals-card" id="goals-card">
+      <div class="goals-header">
+        <span class="goals-title">Today's Goals</span>
+      </div>
+      <div class="goals-display" id="goals-display">
+        <div class="goal-row" data-kind="posts">
+          <div class="goal-row-header">
+            <span class="goal-label">Posts</span>
+            <span class="goal-value" id="goal-posts-value">0 / 0</span>
+          </div>
+          <div class="goal-progress-track">
+            <div class="goal-progress-fill" id="goal-posts-progress"></div>
+          </div>
+        </div>
+        <div class="goal-row" data-kind="replies">
+          <div class="goal-row-header">
+            <span class="goal-label">Replies</span>
+            <span class="goal-value" id="goal-replies-value">0 / 0</span>
+          </div>
+          <div class="goal-progress-track">
+            <div class="goal-progress-fill" id="goal-replies-progress"></div>
+          </div>
+        </div>
+      </div>
+      <form class="goals-form" id="goals-form">
+        <div class="goal-input-group">
+          <label for="goal-posts-input">Posts goal</label>
+          <input id="goal-posts-input" name="posts" type="number" min="0" step="1" />
+        </div>
+        <div class="goal-input-group">
+          <label for="goal-replies-input">Replies goal</label>
+          <input id="goal-replies-input" name="replies" type="number" min="0" step="1" />
+        </div>
+        <div class="goal-actions">
+          <button type="submit" class="goal-save">Save</button>
+        </div>
+      </form>
+    </section>
+    <main>
+      <div class="heatmap-wrapper">
+        <div class="heatmap" id="heatmap"></div>
+      </div>
+      <div class="empty-state" id="empty-state" hidden>
+        Start posting or replying on X to see your activity light up.
+      </div>
+      <div class="legend" id="legend">
+        <span class="legend-label">Legend</span>
+        <div class="legend-scale" id="legend-scale"></div>
+      </div>
+    </main>
+    <script src="main.js" type="module"></script>
+  </body>
+</html>

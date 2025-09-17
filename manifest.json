@@ -1,0 +1,43 @@
+{
+  "manifest_version": 3,
+  "name": "X Post Tracker",
+  "description": "Track your X posts and replies per day and visualize them on a GitHub-style heat map.",
+  "version": "0.1.0",
+  "action": {
+    "default_title": "X Activity Tracker",
+    "default_popup": "src/popup/popup.html"
+  },
+  "permissions": [
+    "storage",
+    "notifications"
+  ],
+  "host_permissions": [
+    "https://x.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://x.com/*"],
+      "js": ["src/content/loader.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "src/injected/page/index.js",
+        "src/injected/page/network.js",
+        "src/injected/page/classify.js",
+        "src/injected/page/utils.js",
+        "src/injected/page/auth.js",
+        "src/injected/page/baseline.js"
+      ],
+      "matches": ["https://x.com/*"]
+    }
+  ],
+  "background": {
+    "service_worker": "src/background/service-worker.js"
+  },
+  "icons": {
+    "128": "assets/icon-128.png"
+  }
+}
