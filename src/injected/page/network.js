@@ -16,7 +16,11 @@ const CLASSIFICATION = {
 const CREATE_TWEET_PATTERN = /https:\/\/(?:[^/]+\.)?x\.com\/i\/api\/graphql\/[^/?]+\/CreateTweet/;
 const LEGACY_TWEET_PATTERN = /https:\/\/(?:[^/]+\.)?x\.com\/i\/api\/1\.1\/statuses\/update\.json/;
 const LIKE_PATTERN = /https:\/\/(?:[^/]+\.)?x\.com\/i\/api\/graphql\/[^/?]+\/(?:FavoriteTweet|CreateFavorite)(?:\/|$)|https:\/\/(?:[^/]+\.)?x\.com\/i\/api\/1\.1\/favorites\/create\.json/;
+const UNLIKE_PATTERN =
+  /https:\/\/(?:[^/]+\.)?x\.com\/i\/api\/graphql\/[^/?]+\/(?:UnfavoriteTweet|DeleteFavorite)(?:\/|$)|https:\/\/(?:[^/]+\.)?x\.com\/i\/api\/1\.1\/favorites\/destroy\.json/;
 const REPOST_PATTERN = /https:\/\/(?:[^/]+\.)?x\.com\/i\/api\/graphql\/[^/?]+\/(?:CreateRetweet|CreateRetweetWithComments)(?:\/|$)|https:\/\/(?:[^/]+\.)?x\.com\/i\/api\/1\.1\/statuses\/retweet\//;
+const UNREPOST_PATTERN =
+  /https:\/\/(?:[^/]+\.)?x\.com\/i\/api\/graphql\/[^/?]+\/(?:DeleteRetweet|UndoRetweet)(?:\/|$)|https:\/\/(?:[^/]+\.)?x\.com\/i\/api\/1\.1\/statuses\/unretweet\//;
 
 export function installNetworkHooks() {
   patchFetch();
@@ -152,10 +156,16 @@ function detectSecondaryAction(url, method) {
     return null;
   }
   if (LIKE_PATTERN.test(url)) {
-    return CLASSIFICATION.like;
+    return { classification: CLASSIFICATION.like, delta: 1 };
+  }
+  if (UNLIKE_PATTERN.test(url)) {
+    return { classification: CLASSIFICATION.like, delta: -1 };
   }
   if (REPOST_PATTERN.test(url)) {
-    return CLASSIFICATION.repost;
+    return { classification: CLASSIFICATION.repost, delta: 1 };
+  }
+  if (UNREPOST_PATTERN.test(url)) {
+    return { classification: CLASSIFICATION.repost, delta: -1 };
   }
   return null;
 }
@@ -257,22 +267,33 @@ function handleTweetResponse(bodyPromise, response) {
     });
 }
 
-function handleSecondaryAction(kind, bodyPromise, ok) {
-  if (!ok) {
+function handleSecondaryAction(action, bodyPromise, ok) {
+  if (!ok || !action) {
     return;
   }
+  const { classification, delta = 1 } = action;
   bodyPromise
     .then(bodyText => {
       const tweetId = parseTweetIdFromBody(bodyText);
-      const eventId = tweetId
-        ? `${kind}:${tweetId}`
-        : `${kind}:${Date.now()}:${Math.random().toString(16).slice(2)}`;
-      postEvent(MESSAGE_TYPES.tweetDetected, {
-        classification: kind,
+      const timestamp = Date.now();
+      const baseId = tweetId
+        ? `${classification}:${tweetId}`
+        : `${classification}:${timestamp}:${Math.random().toString(16).slice(2)}`;
+      const direction = delta < 0 ? 'neg' : 'pos';
+      const eventId = `${baseId}:${direction}`;
+      const payload = {
+        classification,
         tweetId,
         eventId,
-        timestamp: Date.now(),
-      });
+        timestamp,
+      };
+      if (delta !== 1) {
+        payload.delta = delta;
+      }
+      if (delta < 0 && tweetId) {
+        payload.undoOf = `${classification}:${tweetId}:pos`;
+      }
+      postEvent(MESSAGE_TYPES.tweetDetected, payload);
     })
     .catch(error => {
       debugLog('secondary action processing failed', error);

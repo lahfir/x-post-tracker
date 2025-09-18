@@ -44,5 +44,13 @@
     "32": "assets/icon32.png",
     "48": "assets/icon48.png",
     "128": "assets/icon128.png"
+  },
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+F",
+        "mac": "Command+Shift+F"
+      }
+    }
   }
 }

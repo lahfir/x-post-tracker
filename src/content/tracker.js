@@ -3,17 +3,50 @@ import { clampGoalValue } from '../shared/format.js';
 import { DEFAULT_GOALS, STORAGE_KEYS, MESSAGE_TYPES, CLASSIFICATION } from '../shared/constants.js';
 import { ensureDailyEntry } from '../shared/storage.js';
 
-const recordedEventIds = new Set();
+const recordedEvents = new Map();
 const recordedQueue = [];
 const MAX_REMEMBERED_EVENTS = 400;
 
-function rememberEvent(id) {
-  recordedEventIds.add(id);
+function rememberEvent(id, info) {
+  if (!id) {
+    return;
+  }
+  recordedEvents.set(id, info);
   recordedQueue.push(id);
-  if (recordedQueue.length > MAX_REMEMBERED_EVENTS) {
+  trimRecordedQueue();
+}
+
+function forgetEvent(id) {
+  if (!id || !recordedEvents.has(id)) {
+    return null;
+  }
+  const info = recordedEvents.get(id) || null;
+  recordedEvents.delete(id);
+  const index = recordedQueue.indexOf(id);
+  if (index !== -1) {
+    recordedQueue.splice(index, 1);
+  }
+  return info;
+}
+
+function findOppositeEventId(id) {
+  if (!id) {
+    return null;
+  }
+  if (id.endsWith(':pos')) {
+    return `${id.slice(0, -4)}:neg`;
+  }
+  if (id.endsWith(':neg')) {
+    return `${id.slice(0, -4)}:pos`;
+  }
+  return null;
+}
+
+function trimRecordedQueue() {
+  while (recordedQueue.length > MAX_REMEMBERED_EVENTS) {
     const oldest = recordedQueue.shift();
-    if (oldest) {
-      recordedEventIds.delete(oldest);
+    if (oldest && recordedEvents.has(oldest)) {
+      recordedEvents.delete(oldest);
     }
   }
 }
@@ -32,28 +65,51 @@ function normalizeClassification(raw) {
   }
 }
 
-function buildEventId(payload, classification) {
+function buildEventId(payload, classification, delta) {
   if (payload.eventId) {
-    return payload.eventId;
+    return `${payload.eventId}`;
   }
-  const baseId = payload.tweetId ? `${payload.tweetId}` : 'unknown';
+  const baseId = payload.tweetId ? `${classification}:${payload.tweetId}` : `${classification}:unknown`;
   const timestamp = payload.timestamp || Date.now();
-  return `${classification}:${baseId}:${timestamp}`;
+  const direction = delta < 0 ? 'neg' : 'pos';
+  return `${baseId}:${timestamp}:${direction}`;
 }
 
 export async function handleTrackedEvent(payload) {
   const classification = normalizeClassification(payload.classification);
-  const eventId = buildEventId(payload, classification);
-  if (recordedEventIds.has(eventId)) {
+  const delta = typeof payload.delta === 'number' && !Number.isNaN(payload.delta) ? payload.delta : 1;
+  const timestamp = typeof payload.timestamp === 'number' ? payload.timestamp : Date.now();
+  const eventId = buildEventId({ ...payload, timestamp }, classification, delta);
+  const undoOf = typeof payload.undoOf === 'string' ? payload.undoOf : null;
+  const oppositeEventId = findOppositeEventId(eventId);
+  let targetKey = null;
+  if (delta < 0) {
+    const removedInfo = undoOf ? forgetEvent(undoOf) : oppositeEventId ? forgetEvent(oppositeEventId) : null;
+    if (removedInfo?.key) {
+      targetKey = removedInfo.key;
+    }
+  } else if (delta > 0 && oppositeEventId) {
+    forgetEvent(oppositeEventId);
+  }
+  if (!targetKey) {
+    targetKey = formatDateKey(new Date(timestamp));
+  }
+  if (recordedEvents.has(eventId)) {
     return;
   }
-  rememberEvent(eventId);
-  await incrementDailyCount(classification, payload.timestamp);
+  rememberEvent(eventId, { key: targetKey, classification });
+  await applyDailyDelta(targetKey, classification, delta);
 }
 
-async function incrementDailyCount(classification, timestamp) {
-  const eventDate = timestamp ? new Date(timestamp) : new Date();
-  const key = formatDateKey(eventDate);
+function applyDelta(current, delta) {
+  const next = (current || 0) + delta;
+  return next < 0 ? 0 : next;
+}
+
+async function applyDailyDelta(key, classification, delta) {
+  if (!delta) {
+    return;
+  }
   const storage = await chrome.storage.local.get([
     STORAGE_KEYS.dailyCounts,
     STORAGE_KEYS.goals,
@@ -65,16 +121,16 @@ async function incrementDailyCount(classification, timestamp) {
 
   switch (classification) {
     case CLASSIFICATION.reply:
-      entry.replies += 1;
+      entry.replies = applyDelta(entry.replies, delta);
       break;
     case CLASSIFICATION.like:
-      entry.likes += 1;
+      entry.likes = applyDelta(entry.likes, delta);
       break;
     case CLASSIFICATION.repost:
-      entry.reposts += 1;
+      entry.reposts = applyDelta(entry.reposts, delta);
       break;
     default:
-      entry.posts += 1;
+      entry.posts = applyDelta(entry.posts, delta);
       break;
   }
 

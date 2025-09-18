@@ -1,4 +1,4 @@
-const ICON_URL = chrome.runtime.getURL('assets/icon-128.png');
+const ICON_URL = chrome.runtime.getURL('assets/icon128.png');
 const NOTIFICATION_PREFIX = 'xPostTracker:goal:';
 const LABELS = {
   posts: 'Posts',
