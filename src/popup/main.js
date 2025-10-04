@@ -1,5 +1,5 @@
 import { elements } from './dom.js';
-import { loadState, buildTodaySummary, computeTotals, syncGoalInputs } from './state.js';
+import { loadState, buildTodaySummary, syncGoalInputs } from './state.js';
 import { renderHeatmap } from './render/heatmap.js';
 import { renderLegend } from './render/legend.js';
 import { renderTotals } from './render/metrics.js';
@@ -21,7 +21,7 @@ async function refresh() {
 
   renderHeatmap(elements.heatmap, todaySummary);
   renderLegend(elements.legendScale);
-  renderTotals(elements, computeTotals(dailyCounts));
+  renderTotals(elements, todaySummary);
   renderGoalProgress(elements, todaySummary, goalsState);
   elements.emptyState.hidden = todaySummary.total > 0;
   syncGoalInputs(elements, goalsState);

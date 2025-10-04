@@ -32,17 +32,6 @@ export function buildTodaySummary(dailyCounts) {
   };
 }
 
-export function computeTotals(dailyCounts) {
-  let likes = 0;
-  let reposts = 0;
-  Object.values(dailyCounts).forEach(count => {
-    likes += count.likes || 0;
-    const value = count.reposts !== undefined ? count.reposts : count.shares || 0;
-    reposts += value;
-  });
-  return { likes, reposts };
-}
-
 export function renderGoalRow(fillEl, valueEl, achieved, goal) {
   const safeGoal = Math.max(0, goal || 0);
   const percent = safeGoal > 0 ? Math.min(1, achieved / safeGoal) : 1;
