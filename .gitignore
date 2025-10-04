@@ -2,4 +2,4 @@ assets/
 .vscode/
 node_modules/
 .claude/
-.CLAUDE.md
+*.md
